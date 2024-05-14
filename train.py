@@ -6,12 +6,13 @@ import os.path as osp
 from sys import argv
 
 
-def setup_rundir():
-    runs = list(filter(lambda x: x.startswith("runs/run_"), sorted(glob.glob("runs/*"))))
-    if len(runs) > 0:
-        run_name = f"run_{int(runs[-1].split('_')[1])+1:03d}"
-    else:
-        run_name = "run_001"
+def setup_rundir(num_agents, type):
+    # runs = sorted(glob.glob("runs/*"))
+    # if len(runs) > 0:
+    #     run_name = f"run_{int(runs[-1].split('_')[1])+1:03d}"
+    # else:
+    #     run_name = "run_001"
+    run_name = f"{str(num_agents)}_agents_50000_episodes_{type}"
     
     return run_name
 
@@ -25,7 +26,7 @@ if __name__ == "__main__":
     # env params
     if checkpoint is None:
     
-        num_agents       = 10
+        num_agents       = 7
         grid_size        = 25
         sensing_radius   = 3
         max_obstacles    = 20
@@ -61,11 +62,11 @@ if __name__ == "__main__":
         actor_lr=actor_lr, 
         critic_lr=critic_lr,
     )
-    config["type"] = "graph"
-    # config["type"] = "mlp"
+    # config["type"] = "graph"
+    config["type"] = "mlp"
     
     # training params
-    episodes        = 50000
+    episodes        = 10000
     steps           = int(grid_size * 1.5) # set a number of step that allows agents to reach goal 
     randomize_every = episodes // 50
     eval_every      = episodes // 50
@@ -76,7 +77,7 @@ if __name__ == "__main__":
     
     config["steps"] = steps
     
-    run_name = setup_rundir()
+    run_name = setup_rundir(num_agents, config["type"])
     
     runner.train(
         num_episodes=episodes, 

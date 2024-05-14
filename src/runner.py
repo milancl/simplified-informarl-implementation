@@ -243,7 +243,7 @@ class GraphRunner(BaseRunner):
                 self.save_models(run_name)
                 self.save_history(run_name)
 
-    
+    torch.no_grad()
     def eval(self, num_steps, run_name, render=False, load=False, episode=0):
         env = self.env
         
@@ -310,8 +310,17 @@ class GraphRunner(BaseRunner):
             self.save_video(run_name, plotdir, fps=6)
             # remove tmp dir after creating the video
             shutil.rmtree(plotdir)
+
+        episode_duration = 1.0
+        if 0 not in when_dones:
+            episode_duration = (torch.max(when_dones)/num_steps).item()
+
+        episode_finished = 0
+        if torch.all(episode_dones):
+            episode_finished = 1 
+
             
-        return total_rewards, episode_collisions, episode_dones, when_dones
+        return total_rewards, episode_collisions, episode_finished, episode_duration
             
             
     def load_models(self, run_name):
@@ -511,8 +520,10 @@ class MLPRunner(BaseRunner):
         
         episode_collisions = 0
         total_rewards = 0
+        episode_dones = None
+        when_dones = None
         
-        rewards = []
+        # rewards = []
         
         for s in range(num_steps):
             observations = env.get_observations()
@@ -522,18 +533,50 @@ class MLPRunner(BaseRunner):
             dist = Categorical(logits=action_logits)
             actions = dist.sample()
             
-            reward, dones, collisions = env.step(actions)
+            # reward, dones, collisions = env.step(actions)
             
-            rewards.append(reward)
+        #     rewards.append(reward)
             
-            total_rewards += reward.sum().item()
+        #     total_rewards += reward.sum().item()
+        #     episode_collisions += collisions
+            
+        #     if render:
+        #         env.render(plotdir=plotdir, title=f"Step: {s+1}/{num_steps}\n" + 
+        #                         f"Total collisions: {episode_collisions} -- Done: {int(dones.sum())}/{env.num_agents} agents")
+        
+        # rewards = torch.cat(rewards)
+        
+        # print(f"\tEpisode reward: {total_rewards:.3f} -- Collisions: {episode_collisions} -- Done: {int(dones.sum())}/{env.num_agents} agents")
+        
+        # self.history["eval"].append({
+        #     "steps": (episode+1) * num_steps,
+        #     "total_episode_reward": total_rewards,
+        #     "average_episode_reward": rewards.sum(0).mean().item()
+        # })
+        
+        # if render:
+        #     self.save_video(run_name, plotdir, fps=6)
+        #     shutil.rmtree(plotdir)
+            
+        ################## 
+            
+            rewards, dones, collisions = env.step(actions)
+            if episode_dones is None:
+                episode_dones = dones
+                when_dones = torch.zeros_like(episode_dones)
+                when_dones[dones.to(torch.int)] = s
+            else:
+                when_dones[torch.logical_and(dones, torch.logical_not(episode_dones))] = s
+                episode_dones = torch.logical_or(episode_dones, dones)
+                
+                
+            
+            total_rewards += rewards.sum().item()
             episode_collisions += collisions
             
             if render:
                 env.render(plotdir=plotdir, title=f"Step: {s+1}/{num_steps}\n" + 
                                 f"Total collisions: {episode_collisions} -- Done: {int(dones.sum())}/{env.num_agents} agents")
-        
-        rewards = torch.cat(rewards)
         
         print(f"\tEpisode reward: {total_rewards:.3f} -- Collisions: {episode_collisions} -- Done: {int(dones.sum())}/{env.num_agents} agents")
         
@@ -545,8 +588,19 @@ class MLPRunner(BaseRunner):
         
         if render:
             self.save_video(run_name, plotdir, fps=6)
+            # remove tmp dir after creating the video
             shutil.rmtree(plotdir)
+
+        episode_duration = 1.0
+        if 0 not in when_dones:
+            episode_duration = (torch.max(when_dones)/num_steps).item()
+
+        episode_finished = 0
+        if torch.all(episode_dones):
+            episode_finished = 1 
+
             
+        return total_rewards, episode_collisions, episode_finished, episode_duration
             
     def load_models(self, run_name):
         model_dir = osp.join("runs", run_name)
