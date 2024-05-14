@@ -1,0 +1,11 @@
+agg_out_channels: 32
+collision_reward: -5
+dim: 2
+goal_reward: 5
+grid_size: 25
+max_obstacles: 20
+n_random_initializations: 30
+num_agents: 10
+sensing_radius: 3
+steps: 37
+type: mlp
