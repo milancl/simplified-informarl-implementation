@@ -7,7 +7,7 @@ from sys import argv
 
 
 def setup_rundir():
-    runs = sorted(glob.glob("runs/*"))
+    runs = list(filter(lambda x: x.startswith("runs/run_"), sorted(glob.glob("runs/*"))))
     if len(runs) > 0:
         run_name = f"run_{int(runs[-1].split('_')[1])+1:03d}"
     else:
