@@ -7,12 +7,8 @@ import os.path as osp
 from sys import argv
 
 
-def setup_rundir():
-    runs = sorted(glob.glob("runs/*"))
-    if len(runs) > 0:
-        run_name = f"run_{int(runs[-1].split('_')[1])+1:03d}"
-    else:
-        run_name = "run_001"
+def setup_rundir(num_agents, episodes, type): 
+    run_name = f"{str(num_agents)}_agents_{episodes}_episodes_{type}"
     
     return run_name
 
@@ -72,21 +68,12 @@ if __name__ == "__main__":
         save_every      = episodes // 5
         gamma           = 0.8
         
-        # episodes        = 10
-        # steps           = int(grid_size * 1.5) # set a number of step that allows agents to reach goal 
-        # randomize_every = episodes
-        # eval_every      = episodes
-        # train_log_every = episodes
-        # save_models     = True
-        # save_every      = episodes // 2
-        # gamma           = 0.8
-        
         config["steps"] = steps
         config_mlp["steps"] = steps
             
         
         # train graph
-        run_name = setup_rundir()
+        run_name = setup_rundir(num_agents, episodes, "graph")
         graph_runner.train(
             num_episodes=episodes, 
             num_steps=steps, 
@@ -109,7 +96,7 @@ if __name__ == "__main__":
         )
         
         # train mlp
-        run_name = setup_rundir()
+        run_name = setup_rundir(num_agents, episodes, "mlp")
         
         mlp_runner.train(
             num_episodes=episodes, 
@@ -131,6 +118,3 @@ if __name__ == "__main__":
             render=True,
             load=False,
         )
-    
-    # eval(env)
-    

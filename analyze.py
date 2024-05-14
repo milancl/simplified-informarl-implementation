@@ -13,16 +13,15 @@ def extract_train(history):
     tot_rewards = [dict["total_episode_reward"] for dict in list]
     avg_rewards = [dict["average_episode_reward"] for dict in list]
     
-    plt.plot(s, act_loss)
+    plt.title("Training Losses")
+    plt.plot(s, act_loss, label='actor loss')
+    plt.plot(s, cri_loss, label='critic loss')
+    plt.legend()
     plt.show()
     
-    plt.plot(s, cri_loss)
-    plt.show()
-    
-    plt.plot(s, tot_rewards)
-    plt.show()
-    
-    plt.plot(s, avg_rewards)
+    plt.title("Training reward")
+    plt.plot(s, avg_rewards, label='average episode reward') 
+    plt.legend()
     plt.show()
     
 def extract_eval(history):
@@ -32,10 +31,9 @@ def extract_eval(history):
     tot_rewards = [dict["total_episode_reward"] for dict in list]
     avg_rewards = [dict["average_episode_reward"] for dict in list]
 
-    plt.plot(s, tot_rewards)
-    plt.show()
-    
-    plt.plot(s, avg_rewards)
+    plt.title("Evaluation reward")
+    plt.plot(s, avg_rewards, label='average episode reward') 
+    plt.legend()
     plt.show()
         
     
