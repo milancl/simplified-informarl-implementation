@@ -1,5 +1,10 @@
-runs
+
 __pycache__
 .DS_Store
 .venv_simplified_informarl
 videos
+
+runs/*
+
+!runs/10*
+!runs/3*
